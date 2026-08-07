@@ -7,6 +7,7 @@ function RegisterPage() {
     email: '',
     password: '',
   })
+  const [message, setMessage] = useState('')
 
   function handleChange(event) {
     const name = event.target.name
@@ -14,10 +15,31 @@ function RegisterPage() {
     setFormData((values) => ({ ...values, [name]: value }))
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
+    setMessage('')
 
-    console.log(formData)
+    try {
+      const response = await fetch('http://localhost:3000/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        setMessage(errorData.message || 'Registration failed')
+        return
+      }
+
+      const user = await response.json()
+      setMessage(`Account created for ${user.email}`)
+      setFormData({ firstName: '', lastName: '', email: '', password: '' })
+    } catch (error) {
+      setMessage('Unable to connect to the server. Please try again.')
+    }
   }
 
   return (
@@ -67,6 +89,7 @@ function RegisterPage() {
       </div>
 
       <button type="submit">Create account</button>
+      {message && <p>{message}</p>}
     </form>
   )
 }
