@@ -33,6 +33,7 @@ function LoginPage() {
         return
       }
 
+      localStorage.setItem('msmAuth', JSON.stringify(data))
       setMessage(data.message || `Welcome back, ${data.firstName}`)
       setSuccess(true)
       setFormData({ email: '', password: '' })

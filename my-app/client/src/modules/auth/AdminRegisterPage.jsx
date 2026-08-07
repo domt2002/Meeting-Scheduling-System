@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-function RegisterPage() {
+function AdminRegisterPage() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -8,10 +8,27 @@ function RegisterPage() {
     password: ''
   })
   const [message, setMessage] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [userRole, setUserRole] = useState('')
+
+  function getStoredUser() {
+    const stored = localStorage.getItem('msmAuth')
+    if (!stored) return {}
+    try {
+      return JSON.parse(stored)
+    } catch (error) {
+      return {}
+    }
+  }
+
+  useEffect(() => {
+    const user = getStoredUser()
+    setIsAdmin(user.role === 'admin')
+    setUserRole(user.role || '')
+  }, [])
 
   function handleChange(event) {
-    const name = event.target.name
-    const value = event.target.value
+    const { name, value } = event.target
     setFormData((values) => ({ ...values, [name]: value }))
   }
 
@@ -19,23 +36,33 @@ function RegisterPage() {
     event.preventDefault()
     setMessage('')
 
+    const user = getStoredUser()
+    const admin = user.role === 'admin'
+    setIsAdmin(admin)
+    setUserRole(user.role || '')
+
+    if (!admin) {
+      setMessage('Must be logged in as an admin to register another admin.')
+      return
+    }
+
     try {
-      const response = await fetch('http://localhost:3000/users', {
+      const response = await fetch('http://localhost:3000/users/admin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-role': 'admin'
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData)
       })
 
+      const data = await response.json()
       if (!response.ok) {
-        const errorData = await response.json()
-        setMessage(errorData.message || 'Registration failed')
+        setMessage(data.message || 'Admin registration failed')
         return
       }
 
-      const user = await response.json()
-      setMessage(`Account created for ${user.email}`)
+      setMessage(`Admin account created for ${data.email}`)
       setFormData({ firstName: '', lastName: '', email: '', password: '' })
     } catch (error) {
       setMessage('Unable to connect to the server. Please try again.')
@@ -44,6 +71,7 @@ function RegisterPage() {
 
   return (
     <form onSubmit={handleSubmit}>
+      <p>{isAdmin ? 'Admin mode enabled' : 'Please login as admin first.'}</p>
       <div>
         <label>First name</label>
         <input
@@ -88,10 +116,10 @@ function RegisterPage() {
         />
       </div>
 
-      <button type="submit">Create account</button>
+      <button type="submit">Create admin account</button>
       {message && <p>{message}</p>}
     </form>
   )
 }
 
-export default RegisterPage
+export default AdminRegisterPage
