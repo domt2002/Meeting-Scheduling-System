@@ -30,6 +30,39 @@ async function createUser(req, res) {
     }
 }
 
+async function loginUser(req, res) {
+    console.log('loginUser payload:', req.body)
+
+    try {
+        const { email, password } = req.body
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' })
+        }
+
+        const existingUser = await user.findOne({ email })
+        if (!existingUser) {
+            return res.status(401).json({ message: 'Invalid email or password' })
+        }
+
+        const passwordMatches = await bcrypt.compare(password, existingUser.passwordHash)
+        if (!passwordMatches) {
+            return res.status(401).json({ message: 'Invalid email or password' })
+        }
+
+        res.json({
+            id: existingUser._id,
+            firstName: existingUser.firstName,
+            lastName: existingUser.lastName,
+            email: existingUser.email,
+            message: 'Login successful'
+        })
+    } catch (e) {
+        console.error('loginUser error:', e)
+        res.status(500).json({ message: e.message })
+    }
+}
+
 module.exports = {
-    createUser
+    createUser,
+    loginUser
 }
