@@ -11,7 +11,7 @@ import './index.css'
 function App() {
 
     const location = useLocation()
-    const showAuthNav = location.pathname == '/login' || location.pathname == '/register'
+    const showAuthNav = location.pathname === '/login' || location.pathname === '/register'
   return (
     <>
         <header className="site-header">

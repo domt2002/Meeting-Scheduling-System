@@ -21,7 +21,7 @@ function ClientDashboard() {
                 <p>View your scheduled meetings.</p>
             </Link>
 
-            <Link to="/complaints" className="dashboard-card">
+            <Link to="/complaint" className="dashboard-card">
                 <h2>Complaints</h2>
                 <p>View and manage your complaints</p>
             </Link>

@@ -1,4 +1,4 @@
-import {Link} from 'react-router-dom'
+/*import {Link} from 'react-router-dom'
 
 function Dashboard() {
     return(
@@ -17,8 +17,9 @@ function Dashboard() {
 }
 
 export default Dashboard
+*/
 
-/*server is unable to connect to my ip address
+//server is unable to connect to my ip address
 import ClientDashboard from './ClientDashboard.jsx'
 import AdminDashboard from './AdminDashboard.jsx'
 
@@ -37,4 +38,3 @@ function Dashboard() {
 
 export default Dashboard
 
- */
