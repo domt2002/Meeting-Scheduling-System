@@ -3,12 +3,6 @@ import ClientDashboard from './ClientDashboard.jsx'
 import AdminDashboard from "./AdminDashboard.jsx";
 
 function Dashboard() {
-    localStorage.setItem('msmAuth', JSON.stringify({
-        firstName: 'Test',
-        lastName: 'Client',
-        email: 'test@example.com',
-        role: 'client'
-    }))
 
     function getStoredUser() {
         const stored = localStorage.getItem('msmAuth')
