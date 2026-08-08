@@ -51,7 +51,7 @@ function AdminRegisterPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-role': 'admin'
+          userRole: 'admin'
         },
         body: JSON.stringify(formData)
       })

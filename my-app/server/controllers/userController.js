@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt')
 const user = require('../models/user')
 
 function adminRequest(req) {
-    const roleHeader = req.headers['x-user-role'] || req.headers['x-user-role'.toLowerCase()]
+    const roleHeader = req.headers['userrole']
     return roleHeader === 'admin'
 }
 
