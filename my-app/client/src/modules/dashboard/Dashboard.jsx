@@ -1,19 +1,38 @@
-import {Link} from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
+import ClientDashboard from './ClientDashboard.jsx'
+import AdminDashboard from "./AdminDashboard.jsx";
 
 function Dashboard() {
-    return(
-        <div className="dashboard">
-            <h1>Dashboard</h1>
+    localStorage.setItem('msmAuth', JSON.stringify({
+        firstName: 'Test',
+        lastName: 'Client',
+        email: 'test@example.com',
+        role: 'client'
+    }))
 
-            <div className="dashboard-options">
-                <Link to="/complaint">Submit Complaint</Link>
+    function getStoredUser() {
+        const stored = localStorage.getItem('msmAuth')
+        if (!stored) return null
+        try {
+            return JSON.parse(stored)
+        } catch (error) {
+            return null
+        }
+    }
 
-                <Link to="/admin-complaints">Register Admin</Link>
+    const user = getStoredUser()
+    if (!user) {
+        return <Navigate to="/login" replace />
+    }
 
-                <Link to="/admin-complaints">View Complaints</Link>
-            </div>
-        </div>
-    )
+    if (user.role === 'client') {
+        return <ClientDashboard/>
+    }
+    if (user.role === 'admin') {
+        return <AdminDashboard/>
+    }
+
+    return <Navigate to="/login" replace />
 }
 
 export default Dashboard
