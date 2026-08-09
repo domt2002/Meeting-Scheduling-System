@@ -5,7 +5,11 @@ function RegisterPage() {
     firstName: '',
     lastName: '',
     email: '',
-    password: ''
+    password: '',
+    billingAddress: '',
+    creditCardNumber: '',
+    expirationDate: '',
+    cvv: ''
   })
   const [message, setMessage] = useState('')
 

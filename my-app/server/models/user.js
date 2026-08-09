@@ -5,7 +5,11 @@ const userSchema = new mongoose.Schema({
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
-    role: { type: String, default: 'client' }
+    role: { type: String, default: 'client' },
+    billingAddress: { type: String, default: '' },
+    creditCardNumber: { type: String, default: '' },
+    expirationDate: { type: String, default: '' },
+    cvv: { type: String, default: '' }
 })
 
 const user = mongoose.model('user', userSchema)

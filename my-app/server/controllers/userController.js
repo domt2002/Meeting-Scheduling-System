@@ -105,8 +105,130 @@ async function loginUser(req, res) {
     }
 }
 
+async function getUserById(req, res) {
+    const { id } = req.params
+    try {
+        const existingUser = await user.findById(id)
+        if (!existingUser) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+
+        const requesterId = req.headers['userid']
+        const roleHeader = req.headers['userrole']
+        if (requesterId !== id && roleHeader !== 'admin') {
+            return res.status(403).json({ message: 'Forbidden' })
+        }
+
+        res.json({
+            id: existingUser._id,
+            firstName: existingUser.firstName,
+            lastName: existingUser.lastName,
+            email: existingUser.email,
+            role: existingUser.role,
+            billingAddress: existingUser.billingAddress || '',
+            creditCardNumber: existingUser.creditCardNumber || '',
+            expirationDate: existingUser.expirationDate || '',
+            cvv: existingUser.cvv || ''
+        })
+    } catch (e) {
+        console.error('getUserById error:', e)
+        res.status(500).json({ message: e.message })
+    }
+}
+
+async function getUsers(req, res) {
+    const { email, id } = req.query
+    try {
+        if (!email && !id) {
+            return res.status(400).json({ message: 'Query parameter email or id is required' })
+        }
+
+        const query = {}
+        if (id) query._id = id
+        if (email) query.email = email
+
+        const existingUser = await user.findOne(query)
+        if (!existingUser) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+
+        const requesterId = req.headers['userid']
+        const roleHeader = req.headers['userrole']
+        if (requesterId !== String(existingUser._id) && roleHeader !== 'admin') {
+            return res.status(403).json({ message: 'Forbidden' })
+        }
+
+        res.json({
+            id: existingUser._id,
+            firstName: existingUser.firstName,
+            lastName: existingUser.lastName,
+            email: existingUser.email,
+            role: existingUser.role,
+            billingAddress: existingUser.billingAddress || '',
+            creditCardNumber: existingUser.creditCardNumber || '',
+            expirationDate: existingUser.expirationDate || '',
+            cvv: existingUser.cvv || ''
+        })
+    } catch (e) {
+        console.error('getUsers error:', e)
+        res.status(500).json({ message: e.message })
+    }
+}
+
+async function updateUser(req, res) {
+    const { id } = req.params
+    const { firstName, lastName, email, password, billingAddress, creditCardNumber, expirationDate, cvv } = req.body
+
+    const requesterId = req.headers['userid']
+    const roleHeader = req.headers['userrole']
+    if (requesterId !== id && roleHeader !== 'admin') {
+        return res.status(403).json({ message: 'Forbidden' })
+    }
+
+    try {
+        const existingUser = await user.findById(id)
+        if (!existingUser) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+
+        if (firstName !== undefined) existingUser.firstName = firstName
+        if (lastName !== undefined) existingUser.lastName = lastName
+        if (email !== undefined) existingUser.email = email
+        if (password) {
+            existingUser.passwordHash = await bcrypt.hash(password, 10)
+        }
+        if (billingAddress !== undefined) existingUser.billingAddress = billingAddress
+        if (creditCardNumber !== undefined) existingUser.creditCardNumber = creditCardNumber
+        if (expirationDate !== undefined) existingUser.expirationDate = expirationDate
+        if (cvv !== undefined) existingUser.cvv = cvv
+
+        const updatedUser = await existingUser.save()
+        res.json({
+            id: updatedUser._id,
+            firstName: updatedUser.firstName,
+            lastName: updatedUser.lastName,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            billingAddress: updatedUser.billingAddress || '',
+            creditCardNumber: updatedUser.creditCardNumber || '',
+            expirationDate: updatedUser.expirationDate || '',
+            cvv: updatedUser.cvv || '',
+            message: 'Profile updated successfully'
+        })
+    } catch (e) {
+        console.error('updateUser error:', e)
+        if (e.code === 11000) {
+            return res.status(409).json({ message: 'Email already registered' })
+        }
+        res.status(500).json({ message: e.message })
+    }
+}
+
 module.exports = {
     createUser,
     loginUser,
-    createAdminUser
+    createAdminUser,
+    getUsers,
+    getUserById,
+    updateUser
 }

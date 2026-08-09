@@ -30,6 +30,10 @@ function ClientDashboard() {
                 <h2>Inbox</h2>
                 <p>View meeting invitations and ownership transfer requests</p>
             </Link>
+            <Link to="/update-profile" className="dashboard-card">
+                <h2>Update Profile</h2>
+                <p>Update your profile information and set billing information.</p>
+            </Link>
         </div>
     </div>
     )
