@@ -24,7 +24,7 @@ function checkSlot(body){
 
 // Ensure only author can modify meeting
 function notAuthor(m, req){
-    return String(m.author) !== String(req.userId)
+    return String(m.author) !== String(req.user.id)
 }
 
 // FR4, no 2 meetings in same slot. Null = free slot
@@ -69,7 +69,7 @@ async function createMeeting(req, res){
         const made = await meeting.create({
             name: req.body.name.trim(),
             room: req.body.roomId,
-            author: req.userId,
+            author: req.user.id,
             day: req.body.day,
             start: req.body.start,
             end: req.body.end,
@@ -92,7 +92,7 @@ async function listMeetings(req, res){
     try{
         const filter = {}
 
-        if (req.query.mine == 'true') filter.author = req.userId // use case 2.7.9, only my meetings
+        if (req.query.mine == 'true') filter.author = req.user.id // use case 2.7.9, only my meetings
         if (req.query.author) filter.author = req.query.author
         if (req.query.day) filter.day = req.query.day
         if (req.query.roomId) filter.room = req.query.roomId

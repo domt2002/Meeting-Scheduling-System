@@ -20,8 +20,8 @@ function RoomsPage(){
 
     const headers = {
 
-        'Content-Type': 'application/json', userrole: user? user.role : '',
-        userid: user ? user.id : ''
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + (user ? user.token : '')
         }
 
     function fetchRooms() {

@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const {createRoom, listRooms, deleteRoom} = require('../controllers/roomController')
+const {decodeAuth} = require('../controllers/userController')
 
 /*
 roomRoutes
@@ -11,7 +12,7 @@ Admin only for anything that changes a room, FR2
 
 // admin only
 function requireAdmin(req, res, next){
-    if (req.headers['userrole'] !== 'admin') return res.status(403).json({message: 'Error Admin Only function'})
+    if (req.user.role !== 'admin') return res.status(403).json({message: 'Error Admin only function'})
     next()
 }
 
@@ -19,7 +20,7 @@ function requireAdmin(req, res, next){
 router.get('/', listRooms)
 
 // admin only functions
-router.post('/', requireAdmin, createRoom)
-router.delete('/:id', requireAdmin, deleteRoom)
+router.post('/', decodeAuth, requireAdmin, createRoom)
+router.delete('/:id', decodeAuth, requireAdmin, deleteRoom)
 
 module.exports = router

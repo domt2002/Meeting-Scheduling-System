@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const {createMeeting, listMeetings, freeSlots, updateMeeting, addAttendees, removeAttendee, deleteMeeting} = require('../controllers/meetingController')
+const {decodeAuth} = require('../controllers/userController')
 
 /*
 meetingRoutes
@@ -8,16 +9,8 @@ meetingRoutes
 Maps the /meetings urls to meetingController
 */
 
-//get who is signed in so controller knows who owns which meetings
-function attachUser(req, res, next){
-    const id = req.headers['userid']
-    if (!id) return res.status(401).json({message: 'Error, user not signed in'})
-    req.userId = id
-    next()
-}
-
-// depend on user
-router.use(attachUser)
+// verify auth
+router.use(decodeAuth)
 
 router.get('/free', freeSlots) // has to be above /:id or express thinks free is an id
 router.get('/', listMeetings)
