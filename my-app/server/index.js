@@ -7,6 +7,8 @@ dotenv.config()
 
 const userRoutes = require('./routes/userRoutes')
 const complaintRoutes = require('./routes/complaintRoutes')
+const roomRoutes = require('./routes/roomRoutes')
+const meetingRoutes = require('./routes/meetingRoutes')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -14,6 +16,8 @@ const MONGODB_URI = process.env.MONGODB_URI
 
 app.use(express.json())
 app.use(cors())
+app.use('/rooms', roomRoutes)
+app.use('/meetings', meetingRoutes)
 
 if (!MONGODB_URI) {
   console.error('Missing MONGODB_URI environment variable. Set it in .env or your environment.')
