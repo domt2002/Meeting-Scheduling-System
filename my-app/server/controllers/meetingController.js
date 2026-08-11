@@ -45,7 +45,7 @@ async function findClash(roomId, day, start, end, skip){
 }
 
 // POST client makes meeting
-// use case 2.7.5
+// use case 2.7.4
 async function createMeeting(req, res){
     if (!req.body.name || !req.body.name.trim()) return res.status(400).json({message: 'Error, meeting without name.'})
 
@@ -198,13 +198,14 @@ async function removeAttendee(req, res){
     }
 }
 
-// client cancels meeting. use case 2.7.8
+// client cancels meeting. use case 2.7.5
 // slot freed
 async function deleteMeeting(req, res){
     try{
         const m = await meeting.findById(req.params.id)
         if (!m) return res.status(404).json({message: 'No meeting exists with given ID'})
-        if (notAuthor(m, req)) return res.status(403).json({message: 'Error, only meeting creator can cancel it'})
+        // Admins can delete any meeting, use case 2.7.23
+        if (req.user.role !== 'admin' && notAuthor(m, req)) return res.status(403).json({message: 'Error, only meeting creator can cancel it'})
 
         await meeting.findByIdAndDelete(req.params.id)
         res.json({message: 'Meeting successfully cancelled'})
