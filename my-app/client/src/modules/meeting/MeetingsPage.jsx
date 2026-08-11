@@ -19,6 +19,8 @@ function MeetingsPage(){
     const[message, setMessage] = useState('')
     // meeting id, 1 input box per meeting
     const[invite, setInvite] = useState({})
+    // room dropdown per meeting to move it. use case 2.7.11
+    const[moveTo, setMoveTo] = useState({})
 
     // currently logged in user, saved by login page
     const user = JSON.parse(localStorage.getItem('msmAuth') || 'null')
@@ -107,6 +109,36 @@ function MeetingsPage(){
             setMessage(data.message)
             fetchMeetings()
             fetchSlots()// slot now open refresh
+            }
+
+        async function moveMeeting(meeting){
+            const newRoom = rooms.find((room) => room._id == moveTo[meeting._id])
+
+            if(!newRoom) return setMessage('Error: Pick a room to move to')
+
+            // confirm move and alert no refund on $100 fee.
+            let prompt = 'Move ' + meeting.name + ' to ' + newRoom.name + '?'
+            if(newRoom.special) prompt = prompt + ' This room is special and will incur the $100 fee. The $100 will be charged to your card on file.'
+            if (meeting.room.special && !newRoom.special) prompt = prompt + ' Warning: No refund for leaving special room.'
+            if (!window.confirm(prompt)) return
+
+            const res = await fetch('http://localhost:3000/meetings/' + meeting._id, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify({
+                    name: meeting.name,
+                    roomId: newRoom._id,
+                    day: meeting.day,
+                    start: meeting.start,
+                    end: meeting.end,
+                    specialFeePaid: newRoom.special
+                    })
+                })
+
+            const data = await res.json()
+            setMessage(res.ok ? 'Successfully moved to ' + newRoom.name : data.message)
+            fetchMeetings()
+            fetchSlots() // refresh
             }
 
 
@@ -217,6 +249,17 @@ function MeetingsPage(){
                                     onChange={(e) => setInvite({...invite, [meeting._id]: e.target.value})}
                                     />
                                 <button onClick={() => handleInvite(meeting._id)}>Invite Attendee</button>
+
+                            {/* Move meeting to new room */}
+                            <select value={moveTo[meeting._id] || ''} onChange={(e) => setMoveTo({...moveTo, [meeting._id]: e.target.value })}>
+                                <option value="">Move to room: </option>
+                                {rooms.map((room) => (
+                                    <option key = {room._id} value={room._id}>
+                                        {room.name} {room.special ? ' | Special $100' : ''}
+                                    </option>
+                                    ))}
+                            </select>
+                            <button onClick={() => moveMeeting(meeting)}>Confirm Move</button>
                             </div>
                             )}
                         </li>

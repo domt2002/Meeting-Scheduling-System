@@ -65,7 +65,7 @@ async function createMeeting(req, res){
         // FR4, slot has to be open
         const clash = await findClash(req.body.roomId, req.body.day, req.body.start, req.body.end)
 
-        if (clash) return res.status(409).json({message: 'Error, room has already been booked for this time slot!'})
+        if (clash) return res.status(400).json({message: 'Error, room has already been booked for this time slot!'})
 
         const made = await meeting.create({
             name: req.body.name.trim(),
@@ -147,18 +147,28 @@ async function freeSlots(req, res){
 
             const roomId = req.body.roomId || m.room
             const target = await room.findById(roomId)
+            // bad id
             if (!target) return res.status(404).json({message: 'No room with given ID'})
+            // check capacity of new room not exceeded
+            if (m.attendees.length + m.invited.length > target.capacity){
+                return res.status(400).json({message: 'Error moving to new room would exceed capacity of ' + target.capacity})
+            }
+            // when moving meeting to special fee room, check $100 paid first
+            if (target.special && req.body.specialFeePaid !== true){
+                return res.status(402).json({message: '$100 special fee required first', amount: 100})
+            }
 
             // skip cant clash with self
 
             const clash = await findClash(roomId, req.body.day, req.body.start, req.body.end, m._id)
-            if (clash) return res.status(409).json({message: 'Error! Room already booked!'})
+            if (clash) return res.status(400).json({message: 'Error! Room already booked!'})
 
             m.name = req.body.name ? req.body.name.trim() : m.name
             m.room = roomId
             m.day = req.body.day
             m.start = req.body.start
             m.end = req.body.end
+            m.specialFeePaid = m.specialFeePaid || target.special // when moving to special fee room, check special fee paid
 
             await m.save()
             res.json(await m.populate('room'))
@@ -178,6 +188,12 @@ async function addAttendees(req, res){
 
         // takes a list or just one
         const emails = req.body.attendees || [req.body.attendee]
+
+        // can't exceed room's capacity, check
+        const rm = await room.findById(m.room)
+        if (m.attendees.length + m.invited.length + emails.length > rm.capacity){
+            return res.status(400).json({message: 'Error: cannot add more attendees, would exceed room capacity. of ' + rm.capacity})
+        }
 
         for (const e of emails){
             if (typeof e !== 'string' || !e.includes('@')) return res.status(400).json({message: 'Not a real email: ' + e})
