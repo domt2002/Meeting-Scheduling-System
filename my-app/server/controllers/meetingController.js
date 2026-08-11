@@ -1,5 +1,6 @@
 const meeting = require('../models/meeting')
 const room = require('../models/room')
+const user = require('../models/user')
 const {WEEKDAYS, OPEN, CLOSE} = require('../models/meeting')
 
 /*
@@ -92,7 +93,15 @@ async function listMeetings(req, res){
     try{
         const filter = {}
 
-        if (req.query.mine == 'true') filter.author = req.user.id // use case 2.7.9, only my meetings
+        // match email to uid
+        const uid = await user.findById(req.user.id)
+        const uEmail = uid ? uid.email : '' // store email
+
+
+        // Clients can only see their own meetings. Admins can see all
+        if (req.user.role !== 'admin' && req.query.inbox != 'true') {filter.$or = [{author: req.user.id}, {attendees: uEmail}]}
+        // invites not yet responded to
+        if (req.query.inbox == 'true') filter.invited = uEmail
         if (req.query.author) filter.author = req.query.author
         if (req.query.day) filter.day = req.query.day
         if (req.query.roomId) filter.room = req.query.roomId
@@ -158,7 +167,8 @@ async function freeSlots(req, res){
         }
    }
 
-// POST add attendees. use case 2.7.6
+// POST invite attendees to a meeting. use case 2.7.6
+// Go into invited until they accept. use case 2.7.14
 
 async function addAttendees(req, res){
     try{
@@ -171,7 +181,8 @@ async function addAttendees(req, res){
 
         for (const e of emails){
             if (typeof e !== 'string' || !e.includes('@')) return res.status(400).json({message: 'Not a real email: ' + e})
-            if (!m.attendees.includes(e)) m.attendees.push(e) // no dupes
+            // cant invite people who have already been invited, and no inviting people already in meeting
+            if (!m.attendees.includes(e) && !m.invited.includes(e)) m.invited.push(e)
         }
 
         await m.save()
@@ -190,10 +201,54 @@ async function removeAttendee(req, res){
 
         const email = decodeURIComponent(req.params.email)
         m.attendees = m.attendees.filter(a => a !== email)
+        m.invited = m.invited.filter(a => a !== email) // remove someone who was invited but hasnt accepted yet
 
         await m.save()
         res.json(m)
     } catch (e) {
+        res.status(500).json({message: e.message})
+    }
+}
+
+// POST client accepts invite, use case 2.7.14
+// Moved out from invited list and now into attendees list
+async function acceptInvite(req, res){
+    try{
+        const m = await meeting.findById(req.params.id)
+        if(!m) return res.status(404).json({message: 'No meeting exists with given ID'}) // invalid meeting id
+
+        const uid = await user.findById(req.user.id)
+        if (!uid) return res.status(404).json({message: 'User not found with given ID'})
+
+        if(!m.invited.includes(uid.email)) return res.status(403).json({ message: 'Error, not invited to that meeting.'}) // invite not found for meeting
+
+        m.invited = m.invited.filter(a => a !== uid.email) // remove from invited
+        m.attendees.push(uid.email) // add to attendees
+
+        await m.save()
+        res.json({message: 'Invitation accepted'})
+    } catch(e){
+        res.status(500).json({message: e.message})
+    }
+}
+
+// POST client declines an invite, use case 2.7.14
+// removes them from the invited list, similar to accept but doesnt push to attendees
+async function rejectInvite(req, res){
+    try{
+        const m = await meeting.findById(req.params.id)
+        if(!m) return res.status(404).json({message: 'No meeting exists with given ID'}) // invalid meeting id
+
+        const uid = await user.findById(req.user.id)
+        if (!uid) return res.status(404).json({message: 'User not found with given ID'})
+
+        if(!m.invited.includes(uid.email)) return res.status(403).json({message: 'Error, not invited to that meeting.'}) // invite not found for meeting
+
+        m.invited = m.invited.filter(a => a !== uid.email) // remove from invited
+
+        await m.save()
+        res.json({message: 'Invitation rejected'})
+    } catch(e){
         res.status(500).json({message: e.message})
     }
 }
@@ -214,4 +269,4 @@ async function deleteMeeting(req, res){
     }
 }
 
-module.exports = {createMeeting, listMeetings, freeSlots, updateMeeting, addAttendees, removeAttendee, deleteMeeting}
+module.exports = {createMeeting, listMeetings, freeSlots, updateMeeting, addAttendees, removeAttendee, deleteMeeting, acceptInvite, rejectInvite}

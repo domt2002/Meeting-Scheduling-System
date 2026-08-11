@@ -22,6 +22,7 @@ const meetingS = new mongoose.Schema({
     day: {type: String, required: true, enum: WEEKDAYS},
     start: {type: Number, required: true, min: OPEN, max: CLOSE-1},
     end: {type: Number, required: true, min: OPEN +1, max: CLOSE},
+    invited: {type: [String], default: []}, // pending invite accept
     attendees: {type: [String], default: []},
     specialFeePaid: {type: Boolean, default: false},
     created: {type: Date, default: Date.now}

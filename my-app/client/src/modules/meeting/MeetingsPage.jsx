@@ -17,6 +17,8 @@ function MeetingsPage(){
     const [meetings, setMeetings] = useState([])
     const[form, setForm] = useState({name: '', roomId: '', day: 'Monday', start: 0, paid: false})
     const[message, setMessage] = useState('')
+    // meeting id, 1 input box per meeting
+    const[invite, setInvite] = useState({})
 
     // currently logged in user, saved by login page
     const user = JSON.parse(localStorage.getItem('msmAuth') || 'null')
@@ -106,6 +108,34 @@ function MeetingsPage(){
             fetchSlots()// slot now open refresh
             }
 
+
+        // POST email onto a meeting, use case 2.7.6
+
+        async function handleInvite(id){
+            const res = await fetch('http://localhost:3000/meetings/' + id + '/attendees', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({attendee: invite[id]})
+                })
+
+            const data = await res.json()
+            setMessage(res.ok ? 'Invited Attendee' : data.message)
+            if (res.ok) setInvite({...invite, [id]: ''}) // clear meetings box
+            fetchMeetings()
+            }
+
+        async function removeAttendee(id, email){
+            const res = await fetch('http://localhost:3000/meetings/' + id + '/attendees/' + encodeURIComponent(email),
+                {
+                    method: 'DELETE',
+                    headers: headers
+                    })
+
+                const data = await res.json()
+                setMessage(res.ok ? 'Removed attendee: ' + email : data.message)
+                fetchMeetings()
+            }
+
         // check room picked to see if special specialFee
         const picked = rooms.find((r) => r._id == form.roomId)
 
@@ -160,6 +190,34 @@ function MeetingsPage(){
                         <li key={meeting._id}>
                             {meeting.name} - {meeting.room.name} - {meeting.day} | {meeting.start}:00 to {meeting.end}:00 |
                             <button onClick={() => handleCancel(meeting._id)}>Cancel</button>
+                            {!isAdmin && (
+                            <div className="attendees">
+                                <ul>
+                                    {meeting.attendees.map((email) => (
+                                        <li key={email}>
+                                            {email}
+                                            <button onClick={() => removeAttendee(meeting._id, email)}>Remove</button>
+                                        </li>
+                                        ))}
+                                </ul>
+                                {/* Pending invites */}
+                                <ul>
+                                    {meeting.invited.map((email) => (
+                                        <li key = {email}>
+                                            {email}(pending)
+                                            <button onClick={() => removeAttendee(meeting._id, email)}>Remove</button>
+                                        </li>
+                                        ))}
+                                </ul>
+
+                                <input
+                                    placeholder="Enter attendee email"
+                                    value={invite[meeting._id] || ''}
+                                    onChange={(e) => setInvite({...invite, [meeting._id]: e.target.value})}
+                                    />
+                                <button onClick={() => handleInvite(meeting._id)}>Invite Attendee</button>
+                            </div>
+                            )}
                         </li>
                         ))}
                 </ul>

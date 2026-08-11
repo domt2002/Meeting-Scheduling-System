@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const {createMeeting, listMeetings, freeSlots, updateMeeting, addAttendees, removeAttendee, deleteMeeting} = require('../controllers/meetingController')
+const {createMeeting, listMeetings, freeSlots, updateMeeting, addAttendees, removeAttendee,
+        deleteMeeting, acceptInvite, rejectInvite} = require('../controllers/meetingController')
 const {decodeAuth} = require('../controllers/userController')
 
 /*
@@ -15,6 +16,8 @@ router.use(decodeAuth)
 router.get('/free', freeSlots) // has to be above /:id or express thinks free is an id
 router.get('/', listMeetings)
 router.post('/', createMeeting)
+router.post('/:id/accept', acceptInvite)
+router.post('/:id/reject', rejectInvite)
 router.put('/:id', updateMeeting)
 router.delete('/:id', deleteMeeting)
 
