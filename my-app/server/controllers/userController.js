@@ -254,12 +254,35 @@ async function updateUser(req, res) {
     }
 }
 
+async function getClientsWithBilling(req, res) {
+    try {
+        if (!req.user || req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Admin privileges required' })
+        }
+
+        const clients = await user.find({
+            role: 'client',
+            billingAddress: { $ne: '' },
+            creditCardNumber: { $ne: '' },
+            expirationDate: { $ne: '' },
+            cvv: { $ne: '' }
+        }).select('firstName lastName email')
+
+        const result = clients.map(c => ({ id: c._id, firstName: c.firstName, lastName: c.lastName, email: c.email }))
+        res.json(result)
+    } catch (e) {
+        console.error('getClientsWithBilling error:', e)
+        res.status(500).json({ message: e.message })
+    }
+}
+
 module.exports = {
     createUser,
     loginUser,
     createAdminUser,
     getUsers,
     getUserById,
+    getClientsWithBilling,
     updateUser,
     decodeAuth
 }

@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function LoginPage() {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -37,6 +39,7 @@ function LoginPage() {
       setMessage(data.message || `Welcome back, ${data.firstName}`)
       setSuccess(true)
       setFormData({ email: '', password: '' })
+      navigate('/dashboard', { replace: true })
     } catch (error) {
       setMessage('Unable to connect to the server. Please try again.')
     }

@@ -38,6 +38,7 @@ function UpdateAccountPage() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${user.token}`,
             userRole: user.role,
             userId: user.id
           }
@@ -99,6 +100,7 @@ function UpdateAccountPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`,
           userRole: user.role,
           userId: user.id
         },

@@ -6,6 +6,7 @@ import Complaint from './modules/complaint/Complaint.jsx'
 import RespondComplaint from './modules/complaint/respondComplaint.jsx'
 import Dashboard from './modules/dashboard/Dashboard.jsx'
 import UpdateAccountPage from './modules/Account/UpdateAccountPage.jsx'
+import AdminBillingPage from './modules/dashboard/AdminBillingPage.jsx'
 import RoomsPage from './modules/room/RoomsPage.jsx'
 import MeetingsPage from './modules/meeting/MeetingsPage.jsx'
 import logo from './assets/mss-logo.png'
@@ -49,6 +50,7 @@ function App() {
           <Route path="/admin-complaints" element={<RespondComplaint />} />
           <Route path="/profile" element={<UpdateAccountPage />} />
           <Route path="/update-profile" element={<UpdateAccountPage />} />
+          <Route path="/billing" element={<AdminBillingPage />} />
           <Route path="/rooms" element={<RoomsPage />} />
           <Route path="/meetings" element={<MeetingsPage />} />
         </Routes>
