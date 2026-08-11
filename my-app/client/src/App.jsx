@@ -6,6 +6,7 @@ import Complaint from './modules/complaint/Complaint.jsx'
 import RespondComplaint from './modules/complaint/respondComplaint.jsx'
 import Dashboard from './modules/dashboard/Dashboard.jsx'
 import UpdateAccountPage from './modules/Account/UpdateAccountPage.jsx'
+import RoomsPage from './modules/room/RoomsPage.jsx'
 import logo from './assets/mss-logo.png'
 import './index.css'
 
@@ -47,6 +48,7 @@ function App() {
           <Route path="/admin-complaints" element={<RespondComplaint />} />
           <Route path="/profile" element={<UpdateAccountPage />} />
           <Route path="/update-profile" element={<UpdateAccountPage />} />
+          <Route path="/rooms" element={<RoomsPage />} />
         </Routes>
       </main>
     </>

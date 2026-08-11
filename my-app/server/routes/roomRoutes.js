@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const {createRoom, listRooms, updateRoom, deleteRoom} = require('../controllers/roomController')
+const {createRoom, listRooms, deleteRoom} = require('../controllers/roomController')
 
 /*
 roomRoutes
@@ -20,7 +20,6 @@ router.get('/', listRooms)
 
 // admin only functions
 router.post('/', requireAdmin, createRoom)
-router.put('/:id', requireAdmin, updateRoom)
 router.delete('/:id', requireAdmin, deleteRoom)
 
 module.exports = router
