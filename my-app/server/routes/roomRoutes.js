@@ -11,7 +11,7 @@ Admin only for anything that changes a room, FR2
 
 // admin only
 function requireAdmin(req, res, next){
-    if (req.headers['x-user-role'] !== 'admin') return res.status(403).json({message: 'Error admins only funciton'})
+    if (req.headers['userrole'] !== 'admin') return res.status(403).json({message: 'Error Admin Only function'})
     next()
 }
 

@@ -10,7 +10,7 @@ Maps the /meetings urls to meetingController
 
 //get who is signed in so controller knows who owns which meetings
 function attachUser(req, res, next){
-    const id = req.headers['x-user-id']
+    const id = req.headers['userid']
     if (!id) return res.status(401).json({message: 'Error, user not signed in'})
     req.userId = id
     next()
