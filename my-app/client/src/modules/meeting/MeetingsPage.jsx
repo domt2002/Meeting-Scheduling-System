@@ -65,7 +65,8 @@ function MeetingsPage(){
 
     function detectChange(e){
         const {name, value, type, checked} = e.target
-        setForm({...form, [name]: type=== 'checkbox' ? checked: value , start: 0}) // reset slot when switched
+        // skip check when checkbox clicked (for special fee rooms would cause bug and need to reseelect time slot)
+        setForm({...form, [name]: type=== 'checkbox' ? checked: value , start: type === 'checkbox' ? form.start : 0}) // reset slot when switched
         }
 
     async function submit(e){
@@ -188,7 +189,7 @@ function MeetingsPage(){
                <ul>
                     {meetings.map((meeting) => (
                         <li key={meeting._id}>
-                            {meeting.name} - {meeting.room.name} - {meeting.day} | {meeting.start}:00 to {meeting.end}:00 |
+                            {meeting.name} | {meeting.room.name} | {meeting.day} | {meeting.start}:00 to {meeting.end}:00 |
                             <button onClick={() => handleCancel(meeting._id)}>Cancel</button>
                             {!isAdmin && (
                             <div className="attendees">
@@ -204,7 +205,7 @@ function MeetingsPage(){
                                 <ul>
                                     {meeting.invited.map((email) => (
                                         <li key = {email}>
-                                            {email}(pending)
+                                            {email} | (pending)
                                             <button onClick={() => removeAttendee(meeting._id, email)}>Remove</button>
                                         </li>
                                         ))}

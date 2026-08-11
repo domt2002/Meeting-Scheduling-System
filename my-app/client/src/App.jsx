@@ -9,6 +9,7 @@ import UpdateAccountPage from './modules/Account/UpdateAccountPage.jsx'
 import AdminBillingPage from './modules/dashboard/AdminBillingPage.jsx'
 import RoomsPage from './modules/room/RoomsPage.jsx'
 import MeetingsPage from './modules/meeting/MeetingsPage.jsx'
+import InboxPage from './modules/inbox/InboxPage.jsx'
 import logo from './assets/mss-logo.png'
 import './index.css'
 
@@ -53,6 +54,7 @@ function App() {
           <Route path="/billing" element={<AdminBillingPage />} />
           <Route path="/rooms" element={<RoomsPage />} />
           <Route path="/meetings" element={<MeetingsPage />} />
+          <Route path="/inbox" element={<InboxPage />} />
         </Routes>
       </main>
     </>
