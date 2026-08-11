@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const user = require('../models/user')
 
 function adminRequest(req) {
@@ -91,7 +92,19 @@ async function loginUser(req, res) {
             return res.status(401).json({ message: 'Invalid email or password' })
         }
 
+        const token = jwt.sign(
+            {
+                "id": existingUser._id,
+                "role": existingUser.role,
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: '1h',
+            }
+        )
+
         res.json({
+            token: token,
             id: existingUser._id,
             firstName: existingUser.firstName,
             lastName: existingUser.lastName,
@@ -102,6 +115,23 @@ async function loginUser(req, res) {
     } catch (e) {
         console.error('loginUser error:', e)
         res.status(500).json({ message: e.message })
+    }
+}
+
+async function decodeAuth(req, res, next) {
+    const authHeader = req.headers.authorization
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Missing token' })
+    }
+
+    const token = authHeader.split(' ')[1]
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        req.user = decoded
+        next()
+    } catch (e) {
+        return res.status(401).json({ message: 'Invalid token' })
     }
 }
 
@@ -230,5 +260,6 @@ module.exports = {
     createAdminUser,
     getUsers,
     getUserById,
-    updateUser
+    updateUser,
+    decodeAuth
 }
