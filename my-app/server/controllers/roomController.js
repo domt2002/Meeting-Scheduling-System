@@ -58,30 +58,6 @@ async function listRooms(req, res){
     }
 }
 
-// PUT admin edit room case
-async function updateRoom(req, res){
-    const invalid = checkRoom(req.body)
-
-    if(invalid) return res.status(400).json({message: invalid})
-
-    try{
-
-        // check name not taken
-        const nameTaken = await room.findOne({name: req.body.name.trim(), _id: {$ne: req.params.id}})
-
-
-        if (nameTaken) return res.status(409).json({message: 'Error, name already taken'})
-
-        const updated = await room.findByIdAndUpdate(req.params.id, fields(req.body), {new: true})
-        if (!updated) return res.status(404).json({message: 'Error, no room found with given ID'})
-
-        res.json(updated)
-    } catch (e) {
-        res.status(500).json({message: e.message})
-    }
-}
-
-
  // ADMIN DELETES ROOM. use case 2.7.16
  // cannot be deleted if meetings exist in that room
 async function deleteRoom(req, res){
@@ -101,5 +77,5 @@ async function deleteRoom(req, res){
     }
 }
 
-module.exports = {createRoom, listRooms, updateRoom, deleteRoom}
+module.exports = {createRoom, listRooms, deleteRoom}
 
