@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const user = require('../models/user')
 
 function adminRequest(req) {
-    const roleHeader = req.headers['userrole']
+    const roleHeader = req.user.role
     return roleHeader === 'admin'
 }
 
@@ -103,7 +103,7 @@ async function loginUser(req, res) {
             }
         )
 
-        res.json({
+        res.status(200).json({
             token: token,
             id: existingUser._id,
             firstName: existingUser.firstName,
