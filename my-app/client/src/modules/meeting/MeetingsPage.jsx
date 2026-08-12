@@ -22,6 +22,9 @@ function MeetingsPage(){
     // room dropdown per meeting to move it. use case 2.7.11
     const[moveTo, setMoveTo] = useState({})
 
+    //transfer ownership email box per meeting use case 2.7.12
+    const[transferTo, setTransferTo] = useState({})
+
     // currently logged in user, saved by login page
     const user = JSON.parse(localStorage.getItem('msmAuth') || 'null')
     const isAdmin = user && user.role == 'admin'
@@ -140,6 +143,27 @@ function MeetingsPage(){
             fetchMeetings()
             fetchSlots() // refresh
             }
+
+        // make the request for someone else to take over meeting
+        async function requestTransfer(meeting){
+            const email = transferTo[meeting._id]
+            if (!email) return setMessage('Error, input email to transfer to')
+
+            // confirmation
+            if(!window.confirm('Are you sure you wish to transfer: ' + meeting.name + ' to: ' + email + '?\nYou will become an attendee')) return
+
+            // send request
+            const res = await fetch('http://localhost:3000/meetings/' + meeting._id + '/transfer', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({email:email})
+                })
+
+            const data = await res.json()
+            setMessage(data.message)
+            if(res.ok)setTransferTo({...transferTo, [meeting._id]: ''}) // clear transfer box
+            fetchMeetings()// request
+        }
 
 
         // POST email onto a meeting, use case 2.7.6
@@ -260,6 +284,18 @@ function MeetingsPage(){
                                     ))}
                             </select>
                             <button onClick={() => moveMeeting(meeting)}>Confirm Move</button>
+
+                            {/*Transfer ownership */}
+                            {meeting.pendingTransfer ? (
+                                 <p> Transfer pending: {meeting.pendingTransfer}</p>
+                                    ) : (
+                                        <span>
+                                            <input placeholder="Transfer to email"
+                                            value={transferTo[meeting._id] || ''}
+                                            onChange={(e) => setTransferTo({...transferTo, [meeting._id]: e.target.value})}/>
+                                            <button onClick={() => requestTransfer(meeting)}>Transfer Ownership</button>
+                                        </span>
+                                    )}
                             </div>
                             )}
                         </li>

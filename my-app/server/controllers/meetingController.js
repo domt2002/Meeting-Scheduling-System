@@ -98,8 +98,6 @@ async function listMeetings(req, res){
         const uEmail = uid ? uid.email : '' // store email
 
 
-        // Clients can only see their own meetings. Admins can see all
-        if (req.user.role !== 'admin' && req.query.inbox != 'true') {filter.$or = [{author: req.user.id}, {attendees: uEmail}]}
         // invites not yet responded to
         if (req.query.inbox == 'true') filter.invited = uEmail
         if (req.query.author) filter.author = req.query.author
@@ -107,11 +105,10 @@ async function listMeetings(req, res){
         if (req.query.roomId) filter.room = req.query.roomId
         if (req.query.start) filter.start = Number(req.query.start)
         if (req.query.attendee) filter.attendees = String(req.query.attendee)
+        // non admins can access only when viewing inbox or transfer requests
+        if (req.user.role !== 'admin' && req.query.inbox != 'true' && req.query.transfers != 'true') {filter.$or = [{author: req.user.id}, {attendees: uEmail}]}
         // flag if transfer requests waiting on meeting
         if (req.query.transfers == 'true') filter.pendingTransfer = uEmail
-        // non admins can access only when viewing inbox or transfer requests
-        if (req.user.role !== 'admin' && req.query.inbox != 'true' && req.query.transfers != 'true')
-
         res.json(await meeting.find(filter).populate('room').sort({start:1}))
 
 
