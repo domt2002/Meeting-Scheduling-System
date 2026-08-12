@@ -1,23 +1,11 @@
-const express = require('express')
-const cors = require('cors')
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
+const app = require('./app')
 
 dotenv.config()
 
-const userRoutes = require('./routes/userRoutes')
-const complaintRoutes = require('./routes/complaintRoutes')
-const roomRoutes = require('./routes/roomRoutes')
-const meetingRoutes = require('./routes/meetingRoutes')
-
-const app = express()
 const PORT = process.env.PORT || 3000
 const MONGODB_URI = process.env.MONGODB_URI
-
-app.use(express.json())
-app.use(cors())
-app.use('/rooms', roomRoutes)
-app.use('/meetings', meetingRoutes)
 
 if (!MONGODB_URI) {
   console.error('Missing MONGODB_URI environment variable. Set it in .env or your environment.')
@@ -30,8 +18,5 @@ mongoose.connect(MONGODB_URI)
     console.error('MongoDB connection error:', error)
     process.exit(1)
   })
-
-app.use('/users', userRoutes)
-app.use('/complaints', complaintRoutes)
 
 app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`) })
