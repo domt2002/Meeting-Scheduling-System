@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const {createMeeting, listMeetings, freeSlots, updateMeeting, addAttendees, removeAttendee,
-        deleteMeeting, acceptInvite, rejectInvite} = require('../controllers/meetingController')
+        deleteMeeting, acceptInvite, rejectInvite, requestTransfer, rejectTransfer, acceptTransfer} = require('../controllers/meetingController')
 const {decodeAuth} = require('../controllers/userController')
 
 /*
@@ -18,6 +18,9 @@ router.get('/', listMeetings)
 router.post('/', createMeeting)
 router.post('/:id/accept', acceptInvite)
 router.post('/:id/reject', rejectInvite)
+router.post('/:id/transfer', requestTransfer)
+router.post('/:id/transfer/accept', acceptTransfer)
+router.post('/:id/transfer/reject', rejectTransfer)
 router.put('/:id', updateMeeting)
 router.delete('/:id', deleteMeeting)
 

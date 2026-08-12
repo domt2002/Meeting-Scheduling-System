@@ -25,7 +25,9 @@ const meetingS = new mongoose.Schema({
     invited: {type: [String], default: []}, // pending invite accept
     attendees: {type: [String], default: []},
     specialFeePaid: {type: Boolean, default: false},
-    created: {type: Date, default: Date.now}
+    created: {type: Date, default: Date.now},
+    // for transferring ownership
+    pendingTransfer: {type: String, default: ''} // email of new requested owner use case 2.7.12, 2.7.13
 })
 
 

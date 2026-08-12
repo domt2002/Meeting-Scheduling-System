@@ -107,6 +107,10 @@ async function listMeetings(req, res){
         if (req.query.roomId) filter.room = req.query.roomId
         if (req.query.start) filter.start = Number(req.query.start)
         if (req.query.attendee) filter.attendees = String(req.query.attendee)
+        // flag if transfer requests waiting on meeting
+        if (req.query.transfers == 'true') filter.pendingTransfer = uEmail
+        // non admins can access only when viewing inbox or transfer requests
+        if (req.user.role !== 'admin' && req.query.inbox != 'true' && req.query.transfers != 'true')
 
         res.json(await meeting.find(filter).populate('room').sort({start:1}))
 
@@ -269,6 +273,91 @@ async function rejectInvite(req, res){
     }
 }
 
+// request transfer
+async function requestTransfer(req, res){
+    try{
+    // get meeting
+    const m = await meeting.findById(req.params.id)
+    if(!m) return res.status(404).json({message: 'No meeting exists with given ID'}) // invalid meeting id
+    if (notAuthor(m, req)) return res.status(403).json({message: 'Error, only meeting creator can transfer it'})
+
+    const email = req.body.email
+    // check valid email
+    if (typeof email !== 'string' || !email.includes('@')) return res.status(400).json({message: 'Not a real email: ' + email})
+
+    // check against self ownership transfer
+    const uid = await user.findById(req.user.id)
+    if (uid && uid.email == email) return res.status(400).json({message: 'Error, cannot transfer meeting to yourself!'})
+
+    // passes checks, set pending
+    m.pendingTransfer = email
+
+    await m.save()
+    res.json({message: 'Transfer request successfully sent to  ' + email})
+    } catch(e){
+        res.status(500).json({message: e.message})
+    }
+}
+
+// POST, new owner takes over 2.7.13
+// Old owner becomes attendee
+async function acceptTransfer(req, res){
+    try{
+    // get meeting
+    const m = await meeting.findById(req.params.id)
+    if(!m) return res.status(404).json({message: 'No meeting exists with given ID'}) // invalid meeting id
+
+    // get user to be new owner
+    const uid = await user.findById(req.user.id)
+    if (!uid) return res.status(404).json({message: 'User not found with given ID'})
+    // check email = transfer on file
+    if (m.pendingTransfer !== uid.email) return res.status(400).json({message: 'Error, no transfer request for you!'})
+
+    // now swap old owner to attendee, and make the requested owner the owner/author
+    const formerOwner = await user.findById(m.author)
+    // check owner not an attendee, prevent duplicates. push owner as attendee
+    if (formerOwner && !m.attendees.includes(formerOwner.email)) m.attendees.push(formerOwner.email)
+
+    //take new owner out of attendees list and invited
+    m.attendees = m.attendees.filter( a => a !== uid.email)
+    m.invited = m.invited.filter(a => a !== uid.email)
+
+    // transfer ownership
+    m.author = uid._id
+    // clear, done
+    m.pendingTransfer = ''
+
+    await m.save()
+    res.json({message: 'Ownership successfully transferred.'})
+    } catch(e){
+        res.status(500).json({message: e.message})
+    }
+}
+
+// POST transfer declined. Similar to accept transfer, except request disappears
+async function rejectTransfer(req, res){
+    try{
+    // get meeting
+    const m = await meeting.findById(req.params.id)
+    if(!m) return res.status(404).json({message: 'No meeting exists with given ID'}) // invalid meeting id
+
+    // get user to be new owner
+    const uid = await user.findById(req.user.id)
+    if (!uid) return res.status(404).json({message: 'User not found with given ID'})
+    // check email = transfer on file
+    if (m.pendingTransfer !== uid.email) return res.status(400).json({message: 'Error, no transfer request for you!'})
+
+    // clear, done, rejected
+    m.pendingTransfer = ''
+
+    await m.save()
+    res.json({message: 'Ownership request rejected.'})
+    }catch(e){
+        res.status(500).json({message: e.message})
+    }
+}
+
+
 // client cancels meeting. use case 2.7.5
 // slot freed
 async function deleteMeeting(req, res){
@@ -285,4 +374,5 @@ async function deleteMeeting(req, res){
     }
 }
 
-module.exports = {createMeeting, listMeetings, freeSlots, updateMeeting, addAttendees, removeAttendee, deleteMeeting, acceptInvite, rejectInvite}
+module.exports = {createMeeting, listMeetings, freeSlots, updateMeeting, addAttendees,
+ removeAttendee, deleteMeeting, acceptInvite, rejectInvite, requestTransfer, acceptTransfer, rejectTransfer}
