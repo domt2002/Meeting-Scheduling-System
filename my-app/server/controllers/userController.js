@@ -143,9 +143,7 @@ async function getUserById(req, res) {
             return res.status(404).json({ message: 'User not found' })
         }
 
-        const requesterId = req.headers['userid']
-        const roleHeader = req.headers['userrole']
-        if (requesterId !== id && roleHeader !== 'admin') {
+        if (req.user.id !== id && req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Forbidden' })
         }
 
@@ -182,9 +180,7 @@ async function getUsers(req, res) {
             return res.status(404).json({ message: 'User not found' })
         }
 
-        const requesterId = req.headers['userid']
-        const roleHeader = req.headers['userrole']
-        if (requesterId !== String(existingUser._id) && roleHeader !== 'admin') {
+        if (req.user.id !== String(existingUser._id) && req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Forbidden' })
         }
 
@@ -209,9 +205,7 @@ async function updateUser(req, res) {
     const { id } = req.params
     const { firstName, lastName, email, password, billingAddress, creditCardNumber, expirationDate, cvv } = req.body
 
-    const requesterId = req.headers['userid']
-    const roleHeader = req.headers['userrole']
-    if (requesterId !== id && roleHeader !== 'admin') {
+    if (req.user.id !== id && req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Forbidden' })
     }
 

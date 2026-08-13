@@ -5,7 +5,7 @@ const { createUser, loginUser, createAdminUser, getUsers, getUserById, updateUse
 router.post('/', createUser)
 router.post('/login', loginUser)
 router.post('/admin', decodeAuth, createAdminUser)
-router.get('/', getUsers)
+router.get('/', decodeAuth, getUsers)
 router.get('/billing/filled', decodeAuth, getClientsWithBilling)
 router.get('/:id', decodeAuth, getUserById)
 router.put('/:id', decodeAuth, updateUser)
