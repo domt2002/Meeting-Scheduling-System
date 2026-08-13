@@ -30,9 +30,8 @@ function RespondComplaint() {
 
   function fetchComplaints(email) {
     fetch('http://localhost:3000/complaints', {
-      headers: {
-        userRole: 'admin',
-        userEmail: email
+        headers: {
+        Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('msmAuth')).token
       }
     })
       .then((res) => res.json())
@@ -48,10 +47,8 @@ function RespondComplaint() {
 
     const res = await fetch(`http://localhost:3000/complaints/${id}/response`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        userRole: 'admin',
-        userEmail: adminEmail
+      headers: {'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('msmAuth')).token
       },
       body: JSON.stringify({ response: responseText })
     })

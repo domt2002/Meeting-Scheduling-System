@@ -33,12 +33,11 @@ function Complaint() {
       setAuthMessage('')
       fetch('http://localhost:3000/complaints', {
         headers: {
-          userRole: user.role,
-          userEmail: user.email
+                  Authorization: 'Bearer ' + user.token
         }
       })
         .then((res) => res.json())
-        .then((data) => setComplaints(data))
+        .then((data) => setComplaints(Array.isArray(data) ? data : []))
         .catch(() => {
           setComplaints([])
         })
@@ -79,11 +78,10 @@ function Complaint() {
     try {
       const response = await fetch('http://localhost:3000/complaints', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          userRole: user.role,
-          userEmail: user.email
-        },
+         headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('msmAuth')).token
+              },
         body: JSON.stringify(complaintRequest)
       })
 
